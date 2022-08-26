@@ -1,0 +1,24 @@
+html,body {
+  height: 100%;
+  width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 40px;
+  margin-right: 40px;
+}
+h1, h2, ol {
+  color:#008B8B;
+}
+p {
+  color:#CD5C5C;
+}
+h1 {
+  font-size: 40px;
+  margin-top: 50px;
+}
+h2 {
+  margin-top: 100px;
+}
+a {
+  text-decoration: ;
+  color:#093809 ;
+}
