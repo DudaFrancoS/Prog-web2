@@ -17,3 +17,4 @@ function cidades(){
 		item.textContent = cidade;
 		lista.append(item);
 	});
+}
