@@ -1,87 +1,125 @@
-const tamanhoCelula = 40
-let pecaId = 0
-let imgid 
-document.body.append(criaTabuleiro())
+const tamanhoCelula = 40;
+let pecaId = 0;
+let localAtual = 80;
+let localFuturo = 81;
+let classe ='';
+let localCaptura = '';
+let jogada = 0;
+document.body.append(criaTabuleiro());
 
 function criaTabuleiro() {
-    const tamanho = 8
-    const tabela = document.createElement('table')
+    const tamanho = 8;
+    let tabela = document.createElement('table');
 
-    tabela.style.borderStyle = 'solid'
-    tabela.style.borderSpacing = 0
-    tabela.style.margin = 'auto'
+    tabela.style.borderStyle = 'solid';
+    tabela.style.borderSpacing = 0;
+    tabela.style.margin = 'auto';
 
     for (let i = 0; i < tamanho; i++) {
-        const linha = document.createElement('tr')
+        let linha = document.createElement('tr');
         tabela.append(linha);
         for (let j = 0; j < tamanho; j++) {
-            const celula = document.createElement('td')
-            celula.dataset.lin = i
-            celula.dataset.col = j
-            linha.append(celula)
-            celula.style.width = `${tamanhoCelula}px`
-            celula.style.height = `${tamanhoCelula}px`
+            let celula = document.createElement('td');
+			celula.setAttribute('id',`${j}` + '-' + `${i}`);
+            linha.append(celula);
+            celula.style.width = `${tamanhoCelula}px`;
+            celula.style.height = `${tamanhoCelula}px`;
+			pecaId += 1;
+	
             if (i % 2 == j % 2) {
-                celula.addEventListener('dragover', permDrop)
-                celula.style.backgroundColor = 'black'
+                celula.style.backgroundColor = 'black';
+				celula.setAttribute("class","droptarget");
                 if (i * 8 + j <= 24) {
-                    const peca = criaPeca('black')
-                    peca.setAttribute('draggable','false')
-                    celula.append(peca)
-                    celula.removeEventListener('dragover', permDrop)
+                    celula.append(criaPeca('black',pecaId));
                 } else if (i * 8 + j >= 40) {
-                    celula.append(criaPeca('red'))
-                    celula.removeEventListener('dragover', permDrop)
+                    celula.append(criaPeca('red',pecaId));
                 }
             } else {
-                celula.style.backgroundColor = 'white'
+                celula.style.backgroundColor = 'white';
             }
         }
     };
-    return tabela;
+	
+    return tabela;	
 }
 
-function criaPeca(cor) {
-    const imagem = document.createElement('img')
-    imagem.classList.add('peca') 
-    imagem.id = `p${pecaId++}`
-    imagem.setAttribute('src', `img/${cor}.png`)
-    imagem.setAttribute('width', `${tamanhoCelula-4}px`)
-    imagem.setAttribute('height', `${tamanhoCelula-4}px`)
-    imagem.addEventListener('drag', drag)
-    return imagem
+function criaPeca(cor,ide) {
+		let imagem = document.createElement('img');
+		imagem.setAttribute('src', `img/${cor}.png`);
+		imagem.setAttribute('width', `${tamanhoCelula-4}px`);
+		imagem.setAttribute('height', `${tamanhoCelula-4}px`);
+		imagem.setAttribute('draggable','true');
+		imagem.setAttribute('id', ide);
+		imagem.setAttribute('class', cor);
+		
+    return imagem;
 }
 
-function permDrop(evento){
-    evento.preventDefault()
-    const imagem = document.querySelector(`#${imgid}`)
-    const col_ori = imagem.parentElement.dataset.col 
-    const lin_ori = imagem.parentElement.dataset.lin
-    const lin_des = evento.target.dataset.lin 
-    const col_des = evento.target.dataset.col
-    if ((imagem.getAttribute('src') == 'img/red.png' && 
-    lin_des == lin_ori-1 || 
-    imagem.getAttribute('src') == 'img/black.png' && 
-    lin_des-1 == lin_ori) &&
-    (col_ori == col_des-1 || col_ori-1 == col_des)) {
-        evento.target.addEventListener('drop', drop)
-    }
+function dragstart(){
+	document.addEventListener("dragstart", function(event) {
+		event.dataTransfer.setData("Text", event.target.id);
+		localAtual = event.path[1].id.toString();
+		classe = event.path[0].className;
+	});
 }
 
-function drag(evento) {
-    imgid = evento.target.id
+function dragend() {
+	document.addEventListener("dragend", function(event) {
+	});
 }
 
-function trocaJog() {
-    const pecas = document.querySelectorAll('.peca')
-    pecas.forEach(peca => {
-        peca.draggable = !peca.draggable
-    })
+function dragover() {
+	document.addEventListener("dragover", function(event) {
+		event.preventDefault();
+	});
 }
-function drop(evento) {
-    const imagem = document.querySelector(`#${imgid}`)
-    imagem.parentElement.addEventListener('dragover', permDrop)
-    evento.target.appendChild(imagem)
-    imagem.parentElement.removeEventListener('dragover', permDrop)
-    trocaJog()
+
+function drop(){
+	document.addEventListener("drop", function(event) {
+	event.preventDefault();
+	if ( event.target.className == "droptarget") {
+		const data = event.dataTransfer.getData("Text");
+		let c = event.path[0];
+		let t = c.childElementCount;
+		localFuturo = event.target.id.toString();
+		let xa = localAtual.substring(0,1);
+		let ya = localAtual.substring(2,3);
+		let xf = localFuturo.substring(0,1);
+		let yf = localFuturo.substring(2,3);
+		
+		if(classe == 'black' && xf < xa) {
+			localCaptura = (parseInt(xa) - 1).toString() + "-" + (parseInt(ya) + 1).toString();
+		} else if(classe == 'black' && xf > xa) {
+			localCaptura = (parseInt(xa) + 1).toString() + "-" + (parseInt(ya) + 1).toString();
+		} else if(classe == 'red' && xf > xa){
+			localCaptura = (parseInt(xa) + 1).toString() + "-" + (parseInt(ya) - 1).toString();
+		} else if(classe == 'red' && xf < xa){
+			localCaptura = (parseInt(xa) - 1).toString() + "-" + (parseInt(ya) - 1).toString();
+		}
+		captura = document.getElementById(localCaptura);
+		if(captura.childElementCount == '1'){
+			classeCapturada = captura.firstElementChild.className;
+			pecaCapturada = captura.firstElementChild;
+		}
+		if (t == '0' && ya != yf){
+			if (classe == 'red' && ya > yf && ya - yf == 1 && jogada % 2 == 0 || 
+			ya - yf == 2 && classeCapturada == "black" && jogada % 2 == 0 || 
+			classe == 'black' && ya < yf && ya - yf == -1 && jogada % 2 == 1 || 
+			ya - yf == -2 && classeCapturada == "red" && jogada % 2 == 1) {
+				event.target.appendChild(document.getElementById(data));
+				jogada += 1;
+				if(ya - yf == 2 || ya - yf == -2) {
+					pecaCapturada.remove();
+					pecaCapturada = '';
+					classeCapturada = '';
+				}
+			}
+		}
+		
+	}
+	});
 }
+dragstart();
+dragend();
+dragover();
+drop();
